@@ -23,7 +23,7 @@ function HOS_features_analysis(alpha,maxNumberOfIMF,display)
     outputFolder = 'output\data\';
     
     % Open hos-features.csv file and import the data
-    filePath = strcat(outputFolder,'features-training.csv');
+    filePath = strcat(outputFolder,'hos-features.csv');
     opts = detectImportOptions(filePath);
     hosFeatures = readtable(filePath,opts);
     hosFeatures.Diagnosis = categorical(hosFeatures.Diagnosis);
