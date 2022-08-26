@@ -6,7 +6,7 @@ close all;
 addpath('functions');
 
 %% Set values for constant variables
-maxNumberOfIMF = 7;
+maxNumberOfIMF = 6;
 alpha = 0.05;
 trainingFolder = ['a', 'b', 'c', 'd', 'e', 'f'];
 
@@ -36,15 +36,18 @@ plotIMF('a0040','Mitral valve prolapse',maxNumberOfIMF);
 % Diagnosis: Normal
 plotIMF('a0012','Normal',maxNumberOfIMF);
 
-%% Extract HOS features from PCG recordings
+%% Extract the useful IMFs
 for i=1:6
-    fprintf("Extracting HOS-features from database " + ...
+    fprintf("Extracting IMFs from database " + ...
         trainingFolder(i) + "...\n");
-    HOS_features_extraction(trainingFolder(i),maxNumberOfIMF);
-    fprintf("HOS-features extracted successfully from database " + ...
+    IMF_extraction(trainingFolder(i));
+    fprintf("IMFs extracted successfully from database " + ...
         trainingFolder(i) + "\n");
 end
-merge_HOS_features();
 
-%% Statistical analysis of HOS features
-HOS_features_analysis(alpha,maxNumberOfIMF,'disp');
+%% Identify the useful IMFs
+percentages = check_kurtosis_test();
+fprintf("\n---- Percentage of 1s in each IMF ----\n");
+for i=1:maxNumberOfIMF
+    fprintf("\tIMF%d: %.3f%%\n",i,percentages(i));
+end
