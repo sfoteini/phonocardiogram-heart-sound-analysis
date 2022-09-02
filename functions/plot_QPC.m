@@ -1,11 +1,11 @@
-function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
-%PLOTQPC - Decomposes a PCG recording using Empirical Mode Decomposition
+function plot_QPC(PCGrecording,diagnosis,maxNumberOfIMF)
+%PLOTQPC - Decomposes a PCG recording using Empirical Mode Decomposition 
 % and plots the bispectrum of S1, S2 fundamental heart sounds
 % from the extracted IMFs.
 %
 %   plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
-%
-%   - PCGrecording   : file name of the PCG recording (based on the
+%   
+%   - PCGrecording   : file name of the PCG recording (based on the 
 %                      database filename convention)
 %   - diagnosis      : the dianosis of the PCG recording
 %   - maxNumberOfIMF : maximum number of IMFs extracted (default = 6)
@@ -24,10 +24,6 @@ function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
     nOfUsefulIMFs = length(imfs); % number of useful IMFs
     nfft = 512; % length of fft for bispectrum
     wind = 0; % J=0 for bispectrum
-    nsamp = 512; % samples per segment for bispectrum
-    overlap = 50; % percentage overlap for bispectrum
-    interpSamples = 4096; % samples for interpolation
-    Fs = 2000;
 
     % Find training folder based on PCG recording's file name
     trainingFolder = char(PCGrecording);
@@ -40,7 +36,7 @@ function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
 
     % Read the PCG signal
     if isfile(strcat(folder,PCGrecording,'.wav'))
-        [y,Fs] = audioread(strcat(folder,PCGrecording,'.wav'));
+        [signal,Fs] = audioread(strcat(folder,PCGrecording,'.wav'));
     else
         fprintf("PCG recording filename is invalid! Exit...\n");
         return;
@@ -48,7 +44,7 @@ function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
 
     % Filtering the signal and extracting IMFs
     % 3-rd order median filtering
-    signal = medfilt1(y,3);
+    signal = medfilt1(signal,3);
     % Butterworth filter
     [b,a] = butter(10,fc/(Fs/2));
     % Data filtering
@@ -56,10 +52,10 @@ function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
 
     % Find the Intrinsic Mode Functions
     imf = emd(signal,'MaxNumIMF',maxNumberOfIMF);
-
+    
     % Picking the first four IMFs, as the most significant
     imf = imf(:,imfs);
-
+    
     %{
     % Apply soft-thresholding
     for i=1:nOfUsefulIMFs
@@ -72,7 +68,7 @@ function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
     annot = cell2table(annot,'VariableNames',{'Sample','Section'});
     % Convert the second column to string
     annot.Section = string(annot.Section);
-
+    
     % Find the S1 sections
     indexS1 = find(annot.Section == 'S1');
     % Find the S2 sections
@@ -117,86 +113,47 @@ function plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
         end
     end
 
-    % Interpolate the S1 and S2 data
-    intImf_S1 = zeros(interpSamples,nOfS1segments,nOfUsefulIMFs);
-    intImf_S2 = zeros(interpSamples,nOfS2segments,nOfUsefulIMFs);
-    for i = 1:nOfUsefulIMFs
-        for j = 1:nOfS1segments
-            % s1 interpolated data
-            intImf_S1(:,j,i) = interp1(1:1:nOfS1samples,imf_S1(:,j,i), ...
-                linspace(1,nOfS1samples,interpSamples),'spline');
-        end
-    end
-    for i = 1:nOfUsefulIMFs
-        for j = 1:nOfS2segments
-            % s2 interpolated data
-            intImf_S2(:,j,i) = interp1(1:1:nOfS2samples,imf_S2(:,j,i), ...
-                linspace(1,nOfS2samples,interpSamples),'spline');
-        end
-    end
-
-    % New sampling frequencies
-    fs_S1 = interpSamples/(nOfS1samples/Fs);
-    fs_S2 = interpSamples/(nOfS2samples/Fs);
-
-
-
-    % HOS - bispectrum
-    % init a table to sum the bispectrums of each cardiac cycle for s1
+    % HOS - Bispectrum
+    % Init a table to sum the bispectra of each cardiac cycle for S1
     bspec1 = zeros(nfft,nfft,nOfUsefulIMFs);
-    % init a table to sum the bispectrums of each cardiac cycle for s2
+    % Init a table to sum the bispectra of each cardiac cycle for S2
     bspec2 = zeros(nfft,nfft,nOfUsefulIMFs);
+    % Init waxis for bispectrum
+    if (rem(nfft,2) == 0)
+        waxis = ((-nfft/2:(nfft/2-1))'/nfft)*Fs;
+    else
+        waxis = ((-(nfft-1)/2:(nfft-1)/2)'/nfft)*Fs;
+    end
+
     for i = 1:nOfUsefulIMFs
-        for j = 1:nOfS1segments
-            % calculating the bispectrum of s1 on i-th IMF and j-th cardiac cycle
-            [Bspec1,~] = bispecd(intImf_S1(:,j,i),nfft, wind, nsamp, overlap);
-            bspec1(:,:,i) = bspec1(:,:,i) + Bspec1;
-        end
-        for j = 1:nOfS2segments
-            % calculating the bispectrum of s2 on i-th IMF and j-th cardiac cycle
-            [Bspec2,~] = bispecd(intImf_S2(:,j,i),nfft, wind,nsamp,overlap);
-            bspec2(:,:,i) = bspec2(:,:,i) + Bspec2;
-        end
-        % averaging the bispectrum of s1 for the i-th IMF
-        bspec1(:,:,i) = bspec1(:,:,i)./nOfS1segments;
-        % averaging the bispectrum of s2 for the i-th IMF
-        bspec2(:,:,i) = bspec2(:,:,i)./nOfS2segments;
-
-        % contour plot of magnitude bispectum
+        % Bispectrum of S1 and S2 at the i-th IMF
+        bspec1(:,:,i) = bispecd(imf_S1(:,:,i),nfft,wind,nOfS1samples,0);
+        bspec2(:,:,i) = bispecd(imf_S2(:,:,i),nfft,wind,nOfS2samples,0);
         figure();
-        if (rem(nfft,2) == 0)
-            waxisS1 = ((-nfft/2:(nfft/2-1))'/nfft)*fs_s1;
-            waxisS2 = ((-nfft/2:(nfft/2-1))'/nfft)*fs_s2;
-        else
-            waxisS1 = ((-(nfft-1)/2:(nfft-1)/2)'/nfft)*fs_s1;
-            waxisS2 = ((-(nfft-1)/2:(nfft-1)/2)'/nfft)*fs_s2;
-        end
-
         subplot(1,2,1);
-        contour(waxisS1,waxisS1,abs(bspec1(:,:,i)),8);
+        contour(waxis,waxis,abs(bspec1(:,:,i)),8);
         grid on;
-        title('Mean Bispectrum of S1');
+        title(strcat('Bispectrum of S1 at IMF',int2str(imfs(i))));
         xlabel('f1');
         ylabel('f2');
         hold on;
-        plot([0,0.25*fs_S1],[0,0.25*fs_S1],'Color','#D95319'); % f1=f2
-        plot([0.25*fs_S1,0.5*fs_S1],[0.25*fs_S1,0],'Color','#D95319'); % f1+f2=0.5
-        plot([0,0.5*fs_S1],[0,0],'Color','#D95319'); % f2=0
+        plot([0,0.25*Fs],[0,0.25*Fs],'Color','#D95319'); % f1=f2
+        plot([0.25*Fs,0.5*Fs],[0.25*Fs,0],'Color','#D95319'); % f1+f2=0.5
+        plot([0,0.5*Fs],[0,0],'Color','#D95319'); % f2=0
         legend('Bispectrum','Principal Region');
 
         subplot(1,2,2);
-        contour(waxisS2,waxisS2,abs(bspec2(:,:,i)),8);
+        contour(waxis,waxis,abs(bspec2(:,:,i)),8);
         grid on;
-        title('Mean Bispectrum of S2');
+        title(strcat('Bispectrum of S2 at IMF',int2str(imfs(i))));
         xlabel('f1');
         ylabel('f2');
         hold on;
-        plot([0,0.25*fs_S2],[0,0.25*fs_S2],'Color','#D95319'); % f1=f2
-        plot([0.25*fs_S2,0.5*fs_S2],[0.25*fs_S2,0],'Color','#D95319'); % f1+f2=0.5
-        plot([0,0.5*fs_S2],[0,0],'Color','#D95319'); % f2=0
+        plot([0,0.25*Fs],[0,0.25*Fs],'Color','#D95319'); % f1=f2
+        plot([0.25*Fs,0.5*Fs],[0.25*Fs,0],'Color','#D95319'); % f1+f2=0.5
+        plot([0,0.5*Fs],[0,0],'Color','#D95319'); % f2=0
         legend('Bispectrum','Principal Region');
 
-        sgtitle(strcat("Bispectrum of the IMF",num2str(i), ...
-            " - ",diagnosis));
+        sgtitle(strcat("Diagnosis: ",diagnosis));
     end
 end
