@@ -1,19 +1,17 @@
-function plot_QPC(PCGrecording,diagnosis,maxNumberOfIMF)
-%PLOTQPC - Decomposes a PCG recording using Empirical Mode Decomposition 
+function plot_bispectrum(PCGrecording,diagnosis)
+%PLOT_BISPECTRUM - Decomposes a PCG recording using Empirical Mode Decomposition 
 % and plots the bispectrum of S1, S2 fundamental heart sounds
 % from the extracted IMFs.
 %
-%   plotQPC(PCGrecording,diagnosis,maxNumberOfIMF)
+%   plot_bispectrum(PCGrecording,diagnosis)
 %   
 %   - PCGrecording   : file name of the PCG recording (based on the 
 %                      database filename convention)
 %   - diagnosis      : the dianosis of the PCG recording
-%   - maxNumberOfIMF : maximum number of IMFs extracted (default = 6)
 
     arguments
         PCGrecording (1,:) char
         diagnosis (1,:) char
-        maxNumberOfIMF (1,1) {mustBeInteger,mustBePositive} = 6
     end
 
     % Init constants
@@ -21,9 +19,15 @@ function plot_QPC(PCGrecording,diagnosis,maxNumberOfIMF)
     nOfS2samples = 220; % number of s2 samples
     fc = 150; % butterworth cut-off frequency
     imfs = [1 2 3 4]; % useful IMFs
+    maxNumberOfIMF = 6; %maximum number of IMFs extracted
     nOfUsefulIMFs = length(imfs); % number of useful IMFs
     nfft = 512; % length of fft for bispectrum
     wind = 0; % J=0 for bispectrum
+
+    % Output path
+    outputFolder = 'output\figures\';
+    outputFileName = strcat(outputFolder,PCGrecording,'-bispectrum-imf');
+    outputExt = '.png';
 
     % Find training folder based on PCG recording's file name
     trainingFolder = char(PCGrecording);
@@ -71,6 +75,11 @@ function plot_QPC(PCGrecording,diagnosis,maxNumberOfIMF)
     
     % Find the S1 sections
     indexS1 = find(annot.Section == 'S1');
+    % Check if the last S1 section is complete
+    if table2array(annot(indexS1(end),1))+nOfS1samples-1 > length(signal)
+        % Remove the last S1 segment
+        indexS1 = indexS1(1:end-1);
+    end
     % Find the S2 sections
     indexS2 = find(annot.Section == 'S2');
     % Check if the last S2 section is complete
@@ -129,31 +138,38 @@ function plot_QPC(PCGrecording,diagnosis,maxNumberOfIMF)
         % Bispectrum of S1 and S2 at the i-th IMF
         bspec1(:,:,i) = bispecd(imf_S1(:,:,i),nfft,wind,nOfS1samples,0);
         bspec2(:,:,i) = bispecd(imf_S2(:,:,i),nfft,wind,nOfS2samples,0);
+        % Plots
         figure();
-        subplot(1,2,1);
+        t = tiledlayout(1,2,'TileSpacing','compact','Padding','compact');
+
+        % Bispectrum of S1
+        ax1 = nexttile;
         contour(waxis,waxis,abs(bspec1(:,:,i)),8);
-        grid on;
+        grid on;hold on;
+        plot([0,0.25*Fs],[0,0.25*Fs],'Color','#D95319'); % f1=f2
+        plot([0.25*Fs,0.5*Fs],[0.25*Fs,0],'Color','#D95319'); % f1+f2=0.5
+        plot([0,0.5*Fs],[0,0],'Color','#D95319'); % f2=0
         title(strcat('Bispectrum of S1 at IMF',int2str(imfs(i))));
-        xlabel('f1');
-        ylabel('f2');
-        hold on;
-        plot([0,0.25*Fs],[0,0.25*Fs],'Color','#D95319'); % f1=f2
-        plot([0.25*Fs,0.5*Fs],[0.25*Fs,0],'Color','#D95319'); % f1+f2=0.5
-        plot([0,0.5*Fs],[0,0],'Color','#D95319'); % f2=0
         legend('Bispectrum','Principal Region');
 
-        subplot(1,2,2);
+        % Bispectrum of S2
+        ax2 = nexttile;
         contour(waxis,waxis,abs(bspec2(:,:,i)),8);
-        grid on;
-        title(strcat('Bispectrum of S2 at IMF',int2str(imfs(i))));
-        xlabel('f1');
-        ylabel('f2');
-        hold on;
+        grid on;hold on;
         plot([0,0.25*Fs],[0,0.25*Fs],'Color','#D95319'); % f1=f2
         plot([0.25*Fs,0.5*Fs],[0.25*Fs,0],'Color','#D95319'); % f1+f2=0.5
         plot([0,0.5*Fs],[0,0],'Color','#D95319'); % f2=0
+        title(strcat('Bispectrum of S2 at IMF',int2str(imfs(i))));
         legend('Bispectrum','Principal Region');
 
-        sgtitle(strcat("Diagnosis: ",diagnosis));
+        % Figure properties
+        linkaxes([ax1 ax2],'xy');
+        ax1.XLim = [-fc fc];
+        ax1.YLim = [-fc fc];
+        title(t,strcat("Diagnosis: ",diagnosis));
+        xlabel(t,'f1');
+        ylabel(t,'f2');
+        % Save figure to image file
+        saveas(gcf,strcat(outputFileName,int2str(imfs(i)),outputExt));
     end
 end
