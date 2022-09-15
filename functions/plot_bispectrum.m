@@ -1,6 +1,6 @@
 function plot_bispectrum(PCGrecording,diagnosis)
-%PLOT_BISPECTRUM - Decomposes a PCG recording using Empirical Mode Decomposition 
-% and plots the bispectrum of S1, S2 fundamental heart sounds
+%PLOT_BISPECTRUM - Decomposes a PCG recording using Empirical Mode 
+% Decomposition and plots the bispectrum of S1, S2 fundamental heart sounds
 % from the extracted IMFs.
 %
 %   plot_bispectrum(PCGrecording,diagnosis)
