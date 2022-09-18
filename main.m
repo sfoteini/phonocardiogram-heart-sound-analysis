@@ -71,3 +71,12 @@ plot_bispectrum('c0012','Mitral regurgitation');
 plot_bispectrum('a0040','Mitral valve prolapse');
 % Diagnosis: Normal
 plot_bispectrum('a0012','Normal');
+
+%% Compute the bispectral features
+for i=1:6
+    fprintf("Extracting features from database " + ...
+        trainingFolder(i) + "...\n");
+    bisp_features_extraction(trainingFolder(i));
+    fprintf("Features extracted successfully from database " + ...
+        trainingFolder(i) + "\n");
+end
