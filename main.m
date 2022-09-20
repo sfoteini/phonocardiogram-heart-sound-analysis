@@ -80,3 +80,9 @@ for i=1:6
     fprintf("Features extracted successfully from database " + ...
         trainingFolder(i) + "\n");
 end
+
+%% Merge the extracted features into one csv file
+merge_bisp_features_files()
+
+%% Statistical analysis of bispectral features
+bisp_features_analysis(alpha,'disp');
