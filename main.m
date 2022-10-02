@@ -86,3 +86,36 @@ merge_bisp_features_files()
 
 %% Statistical analysis of bispectral features
 bisp_features_analysis(alpha,'disp');
+
+%% Plot cepstrum and find pitch
+% Diagnosis: AD (Aortic disease)
+plot_cepstrum('a0213','Aortic disease');
+% Diagnosis: AS (Aortic stenosis)
+plot_cepstrum('c0026','Aortic stenosis');
+% Diagnosis: Benign (Innocent or benign murmurs)
+plot_cepstrum('a0004','Benign murmurs');
+% Diagnosis: CAD (Coronary artery disease)
+plot_cepstrum('b0063','Coronary artery disease');
+% Diagnosis: MPC (Miscellaneous pathological conditions)
+plot_cepstrum('a0203','Pathologic');
+% Diagnosis: MR (Mitral regurgitation)
+plot_cepstrum('c0012','Mitral regurgitation');
+% Diagnosis: MVP (Mitral valve prolapse)
+plot_cepstrum('a0040','Mitral valve prolapse');
+% Diagnosis: Normal
+plot_cepstrum('a0012','Normal');
+
+%% Compute the pitch from the cepstrum for all the signals
+for i=1:6
+    fprintf("Extracting pitch from database " + ...
+        trainingFolder(i) + "...\n");
+    pitch_estimation_cepstrum(trainingFolder(i));
+    fprintf("Pitch extracted successfully from database " + ...
+        trainingFolder(i) + "\n");
+end
+
+%% Merge the extracted features into one csv file
+merge_pitch_files()
+
+%% Statistics
+pitch_statistical_analysis();
