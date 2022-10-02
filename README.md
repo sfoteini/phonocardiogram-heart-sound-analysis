@@ -50,10 +50,7 @@ phonocardiogram-heart-sound-analysis/
 │   └── training-f/
 │       └── 📜 235 files
 ├── functions/                                              # contains all functions of the project
-│   ├── HOS_features_analysis.m
-│   ├── HOS_features_extraction.m
-│   ├── merge_HOS_features.m
-│   └── plotIMF.m
+│   └── 📜 functions of the project
 ├── lib/                                                    # contains the HOSA toolbox
 │   └── hosa/
 │       └── 📜 functions of the HOSA toolbox
