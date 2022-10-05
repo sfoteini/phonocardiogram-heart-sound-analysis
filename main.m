@@ -119,3 +119,6 @@ merge_pitch_files()
 
 %% Statistics
 pitch_statistical_analysis();
+
+%% Plot the impulse response and the reconstructed signal using Cepstrum
+find_impulse_response('a0001','MVP');
