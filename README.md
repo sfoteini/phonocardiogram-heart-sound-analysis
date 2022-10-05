@@ -1,7 +1,8 @@
-# Analysis of Phonocardiogram signals [Paper title to be added soon]
+# Automatic heart sounds analysis using Empirical Mode Decomposition and Higher-Order Spectra
 
-This repository is the official implementation of [Paper Title](#).
-**Authors**: To be added
+This repository is the official implementation of [Automatic heart sounds analysis using Empirical Mode Decomposition and Higher-Order Spectra](/paper.pdf).
+
+**Authors**: Foteini Savvidou, Stavros Tsimpoukis, Stavros Filosidis, Chrysoula Psyrouki, Konstantinos Barmpounakis, Leontios Hadjileontiadis
 
 ## Abstract
 
