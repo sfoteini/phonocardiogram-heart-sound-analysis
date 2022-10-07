@@ -6,7 +6,9 @@ This repository is the official implementation of [Automatic heart sounds analys
 
 ## Abstract
 
-To be added soon
+Cardiovascular diseases (CVD) are one of the leading causes of morbidity and mortality in the world. The diagnosis of heart disorders is a useful but usually difficult task. Phonocardiogram (PCG) signals contain valuable information about the mechanical function and state of the human heart that is useful in the diagnosis of such diseases. The present work proposes a computer-aided technique based on the analysis of the fundamental heart sounds (FHS), i.e., the first heart sound (S1) and the second heart sound (S2), using Empirical Mode Decomposition (EMD) and Higher-Order Spectra (HOS). EMD allows the decomposition of the PCG signals into several oscillatory components (Intrinsic Mode Functions, IMF) increasing thus the observability of the FHS. By employing a kurtosis-based criterion, we located the IMFs that contain relevant information regarding S1 and S2. On those IMFs, we estimated the bispectrum of FHS and explored features derived from the magnitude of the bispectrum for the quantification of heart conditions (normal and abnormal). Statistical tests were used to facilitate feature selection and the derived features were fed to a decision-tree-based ensemble model classifier (XGBoost) for the distinction of normal and abnormal heart sounds. Experimental results have shown that, overall, the XGBoost classifier determines the heart condition in a percentage of 82% balanced accuracy. Moreover, cepstral analysis was carried out for the identification of the periodicity of a heart cycle and the acquisition of the impulse response that is affiliated with the heart sound signals (normal and abnormal). The results suggest that the bispectral and cepstral analysis of the PCG signals can facilitate the diagnosis of heart disorders in everyday clinical practice.
+
+**Index Terms**: Empirical mode decomposition, Bispectrum, Cepstrum, Phonocardiogram, Heart sounds.
 
 ## Requirements
 
